@@ -1,25 +1,36 @@
 #![allow(unused_variables)]
 
+trait Hashable {
+    fn hash(&self, key_size: usize) -> usize;
+}
+
+impl Hashable for i32 {
+    fn hash(&self, key_size: usize) -> usize {
+        // So silly, but it's simple and works.
+        (self.abs() % (key_size as i32)) as usize
+    }
+}
+
 // This is a super simple hashing function, but it does the trick.
 fn simple_mod_hash(number_to_hash: i32, key_size: usize) -> i32 {
     number_to_hash.abs() % (key_size as i32)
 }
 
 #[derive(Debug)]
-struct Collision {
-    pub value: i32,
-    pub next: Option<Box<Collision>>
+struct Collision<T> {
+    pub value: T,
+    pub next: Option<Box<Collision<T>>>
 }
 
-impl Collision {
-    fn new(value: i32) -> Collision {
+impl<T: Hashable + Eq> Collision<T> {
+    fn new(value: T) -> Collision<T> {
         Collision {
             value: value,
             next: None
         }
     }
 
-    fn add(&mut self, value: i32) -> bool {
+    fn add(&mut self, value: T) -> bool {
         if self.value != value {
             match self.next {
                 Some(ref mut collision) => {
@@ -34,7 +45,7 @@ impl Collision {
         false
     }
 
-    fn has(&self, value: i32) -> bool {
+    fn has(&self, value: T) -> bool {
         if self.value == value {
             return true;
         }
@@ -46,15 +57,13 @@ impl Collision {
 }
 
 #[derive(Debug)]
-struct Set {
-    keys: Vec<Option<Collision>>,
+struct Set<T> {
+    keys: Vec<Option<Collision<T>>>,
     len: usize,
-    // iterator_key_index: usize,
-    // iterator_collision_depth: usize,
 }
 
-impl Set {
-    fn new(key_size: usize) -> Set {
+impl<T: Hashable + Eq> Set<T> {
+    fn new(key_size: usize) -> Set<T> {
         let mut keys = Vec::with_capacity(key_size);
         for i in 0..key_size {
             keys.push(None);
@@ -62,67 +71,33 @@ impl Set {
         Set {
             len: 0,
             keys: keys,
-            // iterator_key_index: 0,
-            // iterator_collision_depth: 0,
         }
     }
 
-    fn add(&mut self, number: i32) {
-        let hash = simple_mod_hash(number, self.keys.capacity()) as usize;
+    fn add(&mut self, number: T) {
+        let hash = number.hash(self.keys.capacity());
 
-        let mut key_is_empty = false;
         match self.keys.get_mut(hash).unwrap() {
             &mut Some(ref mut collision) => {
                 if collision.add(number) {
                     self.len += 1;
                 }
+                return;
             },
-            &mut None => {
-                // Defer updating this value to return the mutable borrow of `self.keys`.
-                key_is_empty = true;
-            },
+            _ => {},
         }
-        if key_is_empty {
-            self.keys[hash] = Some(Collision::new(number));
-            self.len += 1;
-        }
+        self.keys[hash] = Some(Collision::new(number));
+        self.len += 1;
     }
 
-    fn has(&self, number: i32) -> bool {
-        let hash = simple_mod_hash(number, self.keys.capacity()) as usize;
+    fn has(&self, number: T) -> bool {
+        let hash = number.hash(self.keys.capacity());
         match self.keys.get(hash).unwrap() {
             &Some(ref collision) => collision.has(number),
             &None => false,
         }
     }
 }
-
-// impl Iterator for Set {
-//     type Item = Box<i32>;
-//
-//     fn next(&mut self) -> Option<Self::Item> {
-//         // Continue searching through the keys
-//         for key in (self.iterator_position)..(self.keys.len()) {
-//             match key {
-//                 Some(ref collision) => {
-//                     for iterator_depth in  {
-//                         iterator_collision_depth
-//                     }
-//                 },
-//                 None => {}
-//             }
-//             // Reset the collision depth to start back at the top.
-//             self.iterator_collision_depth = 0;
-//             self.iterator_position += 1;
-//         }
-//
-//         if self.iterator_position < 6 {
-//             Some(self.iterator_position)
-//         } else {
-//             None
-//         }
-//     }
-// }
 
 fn main() {
     test_simple_mode_hashing();

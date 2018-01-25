@@ -1,48 +1,77 @@
 #![allow(unused_variables)]
 
-// This is a super simple hashing function, but it does the trick.
-fn simple_mod_hash(number_to_hash: i32, key_size: usize) -> i32 {
-    number_to_hash.abs() % (key_size as i32)
+trait Hashable {
+    fn hash(&self, key_size: usize) -> usize;
+}
+
+impl Hashable for i32 {
+    fn hash(&self, key_size: usize) -> usize {
+        // So silly, but it's simple and works.
+        (self.abs() % (key_size as i32)) as usize
+    }
 }
 
 #[derive(Debug)]
-struct Collision {
-    pub value: i32,
-    pub next: Option<Box<Collision>>
+struct Collision<K, V> {
+    pub key: K,
+    pub value: V,
+    pub next: Option<Box<Collision<K, V>>>
 }
 
-impl Collision {
-    fn new(value: i32) -> Collision {
+impl<K: Hashable + Eq, V> Collision<K, V> {
+    fn new(key: K, value: V) -> Collision<K, V> {
         Collision {
+            key: key,
             value: value,
             next: None
         }
     }
 
-    fn add(&mut self, value: i32) -> bool {
-        if self.value != value {
+    fn add(&mut self, key: K, value: V) -> bool {
+        if self.key != key {
             match self.next {
                 Some(ref mut collision) => {
-                    return collision.add(value);
+                    return collision.add(key, value);
                 },
                 None => {
-                    self.next = Some(Box::new(Collision::new(value)));
+                    self.next = Some(Box::new(Collision::new(key, value)));
                     return true;
                 }
             }
         }
         false
     }
+
+    fn has(&self, key: K) -> bool {
+        if self.key == key {
+            return true;
+        }
+        match self.next {
+            Some(ref collision) => collision.has(key),
+            None => false
+        }
+    }
+
+    fn get(&self, key: K) -> Option<&V> {
+        if self.key == key {
+            return Some(&self.value);
+        }
+        match self.next {
+            Some(ref collision) => collision.get(key),
+            None => None
+        }
+    }
+
 }
 
 #[derive(Debug)]
-struct HashMap {
+struct HashMap<K, V> {
+    keys: Vec<Option<Collision<K, V>>>,
     len: usize,
-    keys: Vec<Option<Collision>>
 }
 
-impl HashMap {
-    fn new(key_size: usize) -> HashMap {
+impl<K: Hashable + Eq, V> HashMap<K, V> {
+    fn new(key_size: usize) -> HashMap<K, V> {
         let mut keys = Vec::with_capacity(key_size);
         for i in 0..key_size {
             keys.push(None);
@@ -53,35 +82,45 @@ impl HashMap {
         }
     }
 
-    fn add(&mut self, number: i32) {
-        let hash = simple_mod_hash(number, self.keys.capacity()) as usize;
+    fn add(&mut self, key: K, value: V) {
+        let hash = key.hash(self.keys.len());
 
-        let mut key_is_empty = false;
         match self.keys.get_mut(hash).unwrap() {
             &mut Some(ref mut collision) => {
-                if collision.add(number) {
+                if collision.add(key, value) {
                     self.len += 1;
                 }
+                return;
             },
-            &mut None => {
-                // Defer updating this value to return the mutable borrow of `self.keys`.
-                key_is_empty = true;
-            },
+            _ => {},
         }
-        if key_is_empty {
-            self.keys[hash] = Some(Collision::new(number));
-            self.len += 1;
+        self.keys[hash] = Some(Collision::new(key, value));
+        self.len += 1;
+    }
+
+    fn has(&self, key: K) -> bool {
+        let hash = key.hash(self.keys.capacity());
+        match self.keys.get(hash).unwrap() {
+            &Some(ref collision) => collision.has(key),
+            &None => false,
         }
     }
 
-    fn has(&mut self, number: i32) -> bool {
-        true
+    fn get(&self, key: K) -> Option<&V> {
+        let hash = key.hash(self.keys.capacity());
+        match self.keys.get(hash).unwrap() {
+            &Some(ref collision) => collision.get(key),
+            &None => None,
+        }
     }
+
 }
 
 fn main() {
     test_simple_mode_hashing();
-    test_create_hashmap();
+    test_hashmap_length();
+    test_hashmap_has();
+    test_hashmap_get();
     println!("Done running hashmap code.");
 }
 
@@ -94,10 +133,54 @@ fn test_simple_mode_hashing() {
     assert_eq!(simple_mod_hash(12, key_size), 0);
 }
 
-fn test_create_hashmap() {
-    let mut hash_map = HashMap::new(200);
-    hash_map.add(50);
-    hash_map.add(250);
-    hash_map.has(50);
-    println!("{:?}", hash_map);
+fn test_hashmap_length() {
+    let mut set = HashMap::new(200);
+    assert_eq!(set.len, 0);
+
+    set.add(50, 0);
+    assert_eq!(set.len, 1);
+
+    set.add(51, 1);
+    assert_eq!(set.len, 2);
+
+    // With simple modulo hashing, this will be a collision with 50.
+    set.add(250, 2);
+    assert_eq!(set.len, 3);
+}
+
+fn test_hashmap_has() {
+    let set_key_size = 200;
+    assert_eq!(
+        simple_mod_hash(50, set_key_size),
+        simple_mod_hash(250, set_key_size),
+        "This test assumes that 50 and 250 are hash collisions"
+    );
+
+    let mut set = HashMap::new(set_key_size);
+    assert_eq!(set.has(50), false, "Initially the set doesn't have these values.");
+    assert_eq!(set.has(51), false, "Initially the set doesn't have these values.");
+    assert_eq!(set.has(250), false, "Initially the set doesn't have these values.");
+
+    set.add(50, 0);
+    set.add(51, 1);
+    set.add(250, 2);
+
+    assert_eq!(set.has(50), true, "Checking for added numbers works.");
+    assert_eq!(set.has(51), true, "Checking for added numbers works.");
+    assert_eq!(set.has(250), true, "Checking for numbers with collisions work..");
+
+    // This is a collision with both 50 and 250.
+    assert_eq!(set.has(450), false);
+}
+
+fn test_hashmap_get() {
+    let mut set = HashMap::new(200);
+
+    set.add(50, 0);
+    set.add(51, 1);
+    set.add(250, 2);
+
+    assert_eq!(*set.get(50).unwrap(), 0, "Got a value out");
+    assert_eq!(*set.get(51).unwrap(), 1, "Got a value out");
+    assert_eq!(*set.get(250).unwrap(), 2, "Got a value out");
 }
