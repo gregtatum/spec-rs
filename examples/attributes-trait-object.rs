@@ -16,7 +16,7 @@ struct Attributes {
 // Add a "name" and "data" tuple for each attribute, this Attributes struct would be part of
 // some larger struct.
 impl Attributes {
-    pub fn add(&mut self, name: String, data: &BufferData) {
+    pub fn add(&mut self, name: String, data: &dyn BufferData) {
         &self.list.push((name, data.to_gl_buffer()));
     }
 }

@@ -8,9 +8,9 @@ impl<'a> std::fmt::LowerHex for ByteBuf<'a> {
         let mut i = 0;
         for byte in self.0 {
             if i % self.1 == 0 {
-                fmtr.write_fmt(format_args!("| "));
+                fmtr.write_fmt(format_args!("| "))?;
             }
-            try!( fmtr.write_fmt(format_args!("{:02x} ", byte)));
+            fmtr.write_fmt(format_args!("{:02x} ", byte))?;
             i += 1;
         }
         Ok(())
@@ -28,6 +28,7 @@ fn output_size<T>(name: &'static str, value: &T) {
     );
 }
 
+#[allow(dead_code)]
 struct MyStruct {
     a: i32,
     b: i32

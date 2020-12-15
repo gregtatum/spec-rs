@@ -1,7 +1,7 @@
 struct Struct { pub value: i32 }
 
 fn main() {
-    let mut x = &Struct { value: 5 };
+    let x = &Struct { value: 5 };
 
     match x {
         &ref x => { println!("Inside match {}", x.value); }

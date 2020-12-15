@@ -1,4 +1,4 @@
-// rustc --pretty expanded ./examples/macro-expansion
+// rustc -Z unstable-options --pretty expanded ./examples/macro-expansion.rs
 
 macro_rules! cb {
     ( $x:expr, $y:expr ) => {
@@ -14,5 +14,5 @@ macro_rules! cb {
 
 
 fn main() {
-    cb![Box:new(0), Box::new(1)]
+    let _vec = cb![Box::new(0), Box::new(1)];
 }

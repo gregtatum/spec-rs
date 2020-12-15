@@ -9,7 +9,7 @@ impl UniformValue for f32 {
 }
 
 fn main() {
-    let mut v: Vec<Box<Fn() -> Box<UniformValue>>> = Vec::new();
+    let mut v: Vec<Box<dyn Fn() -> Box<dyn UniformValue>>> = Vec::new();
     v.push(
         Box::new(|| Box::new(32.0))
     );
