@@ -5,4 +5,5 @@ authors = ["Greg Tatum <tatum.creative@gmail.com>"]
 
 [dependencies]
 rand = "0.3"
-icu = "0.1"
+icu = { path = "/Users/greg/dev/icu4x/components/icu" }
+icu_provider_fs = { path = "/Users/greg/dev/icu4x/components/provider_fs" }

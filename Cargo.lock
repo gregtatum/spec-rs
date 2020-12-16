@@ -18,8 +18,6 @@ dependencies = [
 [[package]]
 name = "fixed_decimal"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9ab0e4c3e03a601846ccf2057862929b4319979bc37dc584b8f89c308f45a44"
 dependencies = [
  "smallvec",
  "static_assertions",
@@ -28,8 +26,6 @@ dependencies = [
 [[package]]
 name = "icu"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca42a7d0c699db17eb05c5c58c5cb7c80b95450a36eb2e60746e4d0a0e7d1fc6"
 dependencies = [
  "icu_datetime",
  "icu_locid",
@@ -41,8 +37,6 @@ dependencies = [
 [[package]]
 name = "icu_datetime"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6598511b0ec30f4a3cff36e0df6076945425ed4ff18de1baabebb2d580ed43c1"
 dependencies = [
  "icu_locid",
  "icu_provider",
@@ -51,17 +45,14 @@ dependencies = [
 [[package]]
 name = "icu_locid"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be59758369e800d7d98e86d5892031b5c5f7fafe0fe811aee52a93c2a12165ba"
 dependencies = [
+ "serde",
  "tinystr",
 ]
 
 [[package]]
 name = "icu_locid_macros"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31d2d110d1c1665ff2133acc56a1f6ac1555d0b34785483b7eaea4219c0aa9ee"
 dependencies = [
  "icu_locid",
  "proc-macro-crate",
@@ -71,8 +62,6 @@ dependencies = [
 [[package]]
 name = "icu_plurals"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67a4dfa5f0d46793ba26fee7fe54948b126edd156298f2a0db574b0997ad9bb4"
 dependencies = [
  "fixed_decimal",
  "icu_locid",
@@ -82,8 +71,6 @@ dependencies = [
 [[package]]
 name = "icu_provider"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffff83fb04928baf8111e10e710b690eb3fb3b926a16501cd70ddba0698af426"
 dependencies = [
  "downcast-rs",
  "erased-serde",
@@ -94,10 +81,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "icu_provider_fs"
+version = "0.1.0"
+dependencies = [
+ "icu_locid",
+ "icu_provider",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "icu_uniset"
 version = "0.1.0"
+
+[[package]]
+name = "itoa"
+version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31e1a272f6dff44d393c6d22e4b952c30550c1f1a0b2950319df1c5de14088fb"
+checksum = "dc6f3ad7b9d11a0c00842ff8de1b60ee58661048eb8049ed33c73594f359d7e6"
 
 [[package]]
 name = "libc"
@@ -142,6 +143,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "ryu"
+version = "1.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "71d301d4193d031abdd79ff7e3dd721168a9572ef3fe51a1517aba235bd8f86e"
+
+[[package]]
 name = "serde"
 version = "1.0.118"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -159,6 +166,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "serde_json"
+version = "1.0.60"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1500e84d27fe482ed1dc791a56eddc2f230046a040fa908c08bda1d9fb615779"
+dependencies = [
+ "itoa",
+ "ryu",
+ "serde",
 ]
 
 [[package]]
@@ -182,6 +200,7 @@ name = "spec-rs"
 version = "0.1.0"
 dependencies = [
  "icu",
+ "icu_provider_fs",
  "rand",
 ]
 

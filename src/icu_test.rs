@@ -1,16 +1,11 @@
 #[cfg(test)]
 mod test_language_identifier {
+    use icu::locid::macros::langid;
     use icu::locid::LanguageIdentifier;
-
-    fn parse(string: &'static str) -> LanguageIdentifier {
-        string
-            .parse()
-            .expect("Failed to parse language identifier.")
-    }
 
     #[test]
     fn simple() {
-        let language_id = parse("zh");
+        let language_id = "zh".parse::<LanguageIdentifier>().unwrap();
         assert_eq!(language_id.language, "zh");
         assert_eq!(language_id.script, None);
         assert_eq!(language_id.region, None);
@@ -18,8 +13,8 @@ mod test_language_identifier {
     }
 
     #[test]
-    fn with_script_region() {
-        let language_id = parse("zh-Hans-CN");
+    fn with_script_and_region() {
+        let language_id = "zh-Hans-CN".parse::<LanguageIdentifier>().unwrap();
         assert_eq!(language_id.language, "zh");
         assert_eq!(language_id.script.unwrap(), "Hans");
         assert_eq!(language_id.region.unwrap(), "CN");
@@ -28,12 +23,92 @@ mod test_language_identifier {
 
     #[test]
     fn with_variant() {
-        let language_id = parse("de-CH-1996");
+        let language_id = "de-CH-1996".parse::<LanguageIdentifier>().unwrap();
         assert_eq!(language_id.language, "de");
         assert_eq!(language_id.script, None);
         assert_eq!(language_id.region.unwrap(), "CH");
         let variants = language_id.variants.into_raw().expect("Expected variants");
         assert_eq!(variants.len(), 1);
         assert_eq!(variants[0], "1996");
+    }
+
+    #[test]
+    fn canonicalization() {
+        // It represents language identifiers in the canonicalized form.
+        let language_id = "ES".parse::<LanguageIdentifier>().unwrap();
+        assert_eq!(language_id.language, "es");
+    }
+
+    #[test]
+    fn with_macro() {
+        let language_id = langid!("zh-Hans-CN");
+        assert_eq!(language_id.language, "zh");
+        assert_eq!(language_id.script.unwrap(), "Hans");
+        assert_eq!(language_id.region.unwrap(), "CN");
+    }
+
+    // This will be a compiler error due to the procedural macro failing.
+
+    // #[test]
+    // fn bad_macros_will_panic() {
+    //     use icu::locid::macros::langid;
+    //     let language_id = langid!("asdf");
+    // }
+}
+
+#[cfg(test)]
+mod test_providers {
+    use std::path::PathBuf;
+
+    use icu::datetime::{date::MockDateTime, DateTimeFormat, DateTimeFormatOptions};
+    use icu::locid::macros::langid;
+
+    // The data must be generated first from:
+    //
+    // > cd ~/dev/icu4x/components/provider_fs
+    // > cargo run --features export-bin -- --cldr-tag 37.0.0 --out ~/me/spec-rs/data/icu --all-keys
+    //
+    // This generates the proper manifest.json, which at this time doesn't appear
+    // to be documented for manual generation or consumption.
+    use icu_provider_fs::FsDataProvider;
+
+    fn get_provider() -> FsDataProvider {
+        FsDataProvider::try_new(PathBuf::from("/Users/greg/me/spec-rs/data/icu"))
+            .expect("Unable to find a provider at that directory.")
+    }
+
+    #[test]
+    fn test_initializing_an_fs_provider() {
+        let _provider = get_provider();
+    }
+
+    #[test]
+    fn test_parsing_mock_date() {
+        let date = "2020-10-14T13:21:50"
+            .parse::<MockDateTime>()
+            .expect("Failed to parse a date time.");
+
+        assert_eq!(usize::from(date.year), 2020, "Parses the year");
+
+        // Month and day start at 0.
+        assert_eq!(usize::from(date.month), 9, "Parses the month");
+        assert_eq!(usize::from(date.day), 13, "Parses the day");
+
+        // Time starts at 1.
+        assert_eq!(usize::from(date.hour), 13, "Parses the hour");
+        assert_eq!(usize::from(date.minute), 21, "Parses the minute");
+        assert_eq!(usize::from(date.second), 50, "Parses the second");
+    }
+
+    #[test]
+    fn test_format_data_time() {
+        let date = "2020-10-14T13:21:50"
+            .parse::<MockDateTime>()
+            .expect("Failed to parse a date time.");
+        let lid = langid!("en");
+        let formatter =
+            DateTimeFormat::try_new(lid, &get_provider(), &DateTimeFormatOptions::default())
+                .expect("Failed to create a DateTimeFormat");
+        let formatted_date = formatter.format(&date);
     }
 }
