@@ -60,7 +60,7 @@ mod test_language_identifier {
 mod test_providers {
     use std::path::PathBuf;
 
-    use icu::datetime::{date::MockDateTime, DateTimeFormat, DateTimeFormatOptions};
+    use icu::datetime::{date::MockDateTime, options, DateTimeFormat, DateTimeFormatOptions};
     use icu::locid::macros::langid;
 
     // The data must be generated first from:
@@ -101,14 +101,69 @@ mod test_providers {
     }
 
     #[test]
-    fn test_format_data_time() {
+    fn test_format_data_time_defaults() {
+        let lid = langid!("en");
+
         let date = "2020-10-14T13:21:50"
             .parse::<MockDateTime>()
             .expect("Failed to parse a date time.");
-        let lid = langid!("en");
+
         let formatter =
             DateTimeFormat::try_new(lid, &get_provider(), &DateTimeFormatOptions::default())
                 .expect("Failed to create a DateTimeFormat");
+
         let formatted_date = formatter.format(&date);
+
+        assert_eq!(
+            formatted_date.to_string(),
+            "October 14, 2020 at 1:21:50 PM z"
+        );
+    }
+
+    #[should_panic(expected = "not implemented")]
+    #[test]
+    fn test_format_data_time_components() {
+        let lid = langid!("en");
+
+        let options = DateTimeFormatOptions::from(options::components::Bag {
+            year: Some(options::components::Numeric::Numeric),
+            month: Some(options::components::Month::Long),
+            day: Some(options::components::Numeric::Numeric),
+
+            hour: Some(options::components::Numeric::TwoDigit),
+            minute: Some(options::components::Numeric::TwoDigit),
+
+            preferences: None,
+
+            ..Default::default()
+        });
+
+        // The components are not implemented yet.
+        let _formatter = DateTimeFormat::try_new(lid, &get_provider(), &options)
+            .expect("Failed to create a DateTimeFormat");
+    }
+
+    #[test]
+    fn test_format_data_time_style() {
+        use icu::datetime::options::style;
+
+        let lid = langid!("en");
+
+        let date = "2020-10-14T13:21:50"
+            .parse::<MockDateTime>()
+            .expect("Failed to parse a date time.");
+
+        let options = DateTimeFormatOptions::Style(style::Bag {
+            date: Some(style::Date::Medium),
+            time: Some(style::Time::Short),
+            ..Default::default()
+        });
+
+        let formatter = DateTimeFormat::try_new(lid, &get_provider(), &options)
+            .expect("Failed to create a DateTimeFormat");
+
+        let formatted_date = formatter.format(&date);
+
+        assert_eq!(formatted_date.to_string(), "Oct 14, 2020, 1:21 PM");
     }
 }
