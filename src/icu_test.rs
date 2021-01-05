@@ -1,4 +1,3 @@
-
 #[cfg(test)]
 mod test_language_identifier {
     use icu::locid::macros::langid;
@@ -60,8 +59,8 @@ mod test_language_identifier {
 #[cfg(test)]
 mod test_providers {
     extern crate test;
+    use self::test::{black_box, Bencher};
     use std::path::PathBuf;
-    use self::test::{Bencher, black_box};
 
     use icu::datetime::{date::MockDateTime, options, DateTimeFormat, DateTimeFormatOptions};
     use icu::locid::macros::langid;
@@ -76,7 +75,7 @@ mod test_providers {
     use icu_provider_fs::FsDataProvider;
 
     fn get_provider() -> FsDataProvider {
-        FsDataProvider::try_new(PathBuf::from("/Users/greg/me/spec-rs/data/icu"))
+        FsDataProvider::try_new(PathBuf::from("data/icu"))
             .expect("Unable to find a provider at that directory.")
     }
 
