@@ -1,3 +1,4 @@
+
 #[cfg(test)]
 mod test_language_identifier {
     use icu::locid::macros::langid;
@@ -58,7 +59,9 @@ mod test_language_identifier {
 
 #[cfg(test)]
 mod test_providers {
+    extern crate test;
     use std::path::PathBuf;
+    use self::test::{Bencher, black_box};
 
     use icu::datetime::{date::MockDateTime, options, DateTimeFormat, DateTimeFormatOptions};
     use icu::locid::macros::langid;
@@ -165,5 +168,29 @@ mod test_providers {
         let formatted_date = formatter.format(&date);
 
         assert_eq!(formatted_date.to_string(), "Oct 14, 2020, 1:21 PM");
+    }
+
+    #[bench]
+    fn bench_date_time(bencher: &mut Bencher) {
+        bencher.iter(|| {
+            use icu::datetime::options::style;
+
+            let lid = langid!("en");
+
+            let date = "2020-10-14T13:21:50"
+                .parse::<MockDateTime>()
+                .expect("Failed to parse a date time.");
+
+            let options = DateTimeFormatOptions::Style(style::Bag {
+                date: Some(style::Date::Medium),
+                time: Some(style::Time::Short),
+                ..Default::default()
+            });
+
+            let formatter = DateTimeFormat::try_new(lid, &get_provider(), &options)
+                .expect("Failed to create a DateTimeFormat");
+
+            black_box(formatter.format(&date));
+        });
     }
 }
