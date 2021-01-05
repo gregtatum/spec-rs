@@ -5,5 +5,10 @@ authors = ["Greg Tatum <tatum.creative@gmail.com>"]
 
 [dependencies]
 rand = "0.3"
-icu = { path = "/Users/greg/dev/icu4x/components/icu" }
-icu_provider_fs = { path = "/Users/greg/dev/icu4x/components/provider_fs" }
+icu = "0.1"
+icu_provider_fs = "0.1"
+
+# It's handy to be able to put in printfs to the raw source, and navigate it locally:
+
+# icu = { path = "/Users/greg/dev/icu4x/components/icu" }
+# icu_provider_fs = { path = "/Users/greg/dev/icu4x/components/provider_fs" }
