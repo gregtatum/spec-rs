@@ -7,5 +7,6 @@ mod atomics;
 mod calendar;
 mod floats;
 mod icu_test;
+mod pin;
 mod pointers;
 mod smallstr_test;
