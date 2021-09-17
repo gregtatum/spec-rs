@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test_language_identifier {
     use icu::locid::macros::langid;
-    use icu::locid::LanguageIdentifier;
+    use icu::locid::{LanguageIdentifier, Locale};
 
     #[test]
     fn simple() {
@@ -45,6 +45,15 @@ mod test_language_identifier {
         assert_eq!(language_id.language, "zh");
         assert_eq!(language_id.script.unwrap(), "Hans");
         assert_eq!(language_id.region.unwrap(), "CN");
+    }
+
+    #[test]
+    fn mutating_locales() {
+        let mut loc: Locale = "en-US".parse().expect("Parsing failed.");
+        assert_eq!(loc.language, "en");
+        assert_eq!(loc.to_string(), "en-US");
+        loc.language = "zh".parse().expect("Parsing zh failed.");
+        assert_eq!(loc.to_string(), "zh-US");
     }
 
     // This will be a compiler error due to the procedural macro failing.

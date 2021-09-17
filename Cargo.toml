@@ -7,6 +7,7 @@ authors = ["Greg Tatum <tatum.creative@gmail.com>"]
 rand = "0.3"
 icu = "0.1"
 icu_provider_fs = "0.1"
+smallstr = "0.2"
 
 # It's handy to be able to put in printfs to the raw source, and navigate it locally:
 
