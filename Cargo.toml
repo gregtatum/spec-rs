@@ -2,12 +2,14 @@
 name = "spec-rs"
 version = "0.1.0"
 authors = ["Greg Tatum <tatum.creative@gmail.com>"]
+edition = "2021"
 
 [dependencies]
 rand = "0.3"
 icu = "0.1"
 icu_provider_fs = "0.1"
 smallstr = "0.2"
+futures = "0.3"
 
 # It's handy to be able to put in printfs to the raw source, and navigate it locally:
 

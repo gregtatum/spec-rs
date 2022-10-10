@@ -6,6 +6,7 @@ extern crate icu_provider_fs;
 mod atomics;
 mod calendar;
 mod floats;
+mod futures;
 mod icu_test;
 mod pin;
 mod pointers;
