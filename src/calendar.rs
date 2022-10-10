@@ -1,4 +1,6 @@
 // 0 = Thursday, January 1, 1970 12:00:00 AM
+#![allow(dead_code)]
+
 use std::fmt;
 
 #[derive(Debug, Clone, Copy)]

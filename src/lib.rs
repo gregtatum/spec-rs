@@ -9,4 +9,5 @@ mod floats;
 mod icu_test;
 mod pin;
 mod pointers;
+mod rc;
 mod smallstr_test;
